@@ -84,7 +84,10 @@ $app->post(
 $app->get(
 	"/api/OTP/{user}",
 	function ($user) use ($app)	{
-		return $user;
+		
+		
+		
+		return $OTP;
 	}
 );
 
