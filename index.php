@@ -32,7 +32,10 @@ $app->post(
 		
 		$request = new Request();
 		$response = new Response();
+		
+		//Initial status and counter for using OTPs		
 		$status = 'xxx';
+		$counter = 0;
 		
 		//Posted data
 		$json = $request->getPost();
@@ -59,6 +62,7 @@ $app->post(
 			//Preparing JSON for writing
 			$status = "PIN Added";
 			$file->{"PIN"} = $info["PIN"];
+			$file->{"counter"} = $counter;
 			$file = json_encode($file);
 
 			//Writing PIN into file
@@ -84,13 +88,80 @@ $app->post(
 $app->get(
 	"/api/OTP/{user}",
 	function ($user) use ($app)	{
+		//Opening document
+		$filename = "users/".$user.".txt";
+		$userFile = fopen($filename, "rw") or die("Unable to open file!");
+		$file = fread($userFile,filesize($filename));
 		
+		//Preparing list of OTPs
+		$OTP = $file;
 		
-		
+		//Sending OTP list
 		return $OTP;
 	}
 );
 
 //AUTHENTIFICATION
+
+//POST METHOD AUTH
+//Verifying given credentials, checking OTP 
+$app->post(
+	"/api/auth",
+	function () use ($app)	{
+		
+		$request = new Request();
+		$response = new Response();
+		$status = 'xxx';
+		
+		//Posted data
+		$json = $request->getPost();
+		$json = key($json);
+		$json = str_replace("'", "",$json);
+		
+		//Posted information array
+		//Unpacking info
+		//1. Username 2. PIN
+		$postInfo = [
+			"user" => substr($json,6,7),
+			"OTP" => substr($json,-5,4),
+		];
+		
+		//Reading file
+		$filename = "users/".$postInfo["user"].".txt";
+		$userFile = fopen($filename, "rw") or die("Unable to open file!");
+		$file = fread($userFile,filesize($filename));
+		$file = json_decode($file);
+		$OTPlist[] = $file->{"OTPlist"};
+		$FileOTP = json_decode(json_encode($OTPlist[0][$file->{"counter"}]));
+		fclose($userFile);
+
+		//Checking if OTP and counter match
+		if ($FileOTP->{"OTP"} == $postInfo["OTP"]){
+			//Preparing JSON for writing
+			$status = "Authentication successful";
+			
+			//Updating counter, start from 0 after 9
+			$file->{"counter"} += 1;
+			$file->{"counter"} = $file->{"counter"}%10;
+			$file = json_encode($file);
+
+			//Writing updated counter into file
+			$writeFile = fopen($filename, "w") or die("Unable to open file!");
+			fwrite($writeFile, $file);
+			fclose($writeFile);
+			
+		}else {
+			$status = "Error #003 - OTPs doesnt match, Authentication failed";
+		}
+		
+		//Response
+		$response->setJsonContent([
+                "status" => $status,
+                "data"   => $postInfo,
+            ]);		
+		return $response;
+	}
+);
+
 
 $app->handle();
