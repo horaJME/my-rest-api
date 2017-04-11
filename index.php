@@ -46,8 +46,8 @@ $app->post(
 		//Unpacking info
 		//1. Username 2. PIN
 		$info = [
-			"user" => substr($json,6,7),
-			"PIN" => substr($json,-5,4),
+			"PIN" => substr($json,5,4),
+			"user" => substr($json,-8,7),
 		];
 		
 		//Reading file

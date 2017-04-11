@@ -15,7 +15,7 @@ For given username, searching if users OTP list exists.
 
 POST /api/PIN
 
-For given info (username and PIN), inserting PIN into users OTP list file.
+For given info (PIN and username), inserting PIN into users OTP list file.
 
 GET /api/OTP/{user}
 
