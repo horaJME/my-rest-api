@@ -38,16 +38,14 @@ $app->post(
 		$counter = 0;
 		
 		//Posted data
-		$json = $request->getPost();
-		$json = key($json);
-		$json = str_replace("'", "",$json);
-		
+		$postedData = $app->request->getJsonRawBody();
+
 		//Posted information array
 		//Unpacking info
 		//1. Username 2. PIN
 		$info = [
-			"PIN" => substr($json,5,4),
-			"user" => substr($json,-8,7),
+			"PIN" => $postedData->PIN,
+			"user" => $postedData->user,
 		];
 		
 		//Reading file
@@ -71,15 +69,11 @@ $app->post(
 			fclose($writeFile);
 			
 		}else {
-			$status = "Error #002 - User already finished ID process";
+			$status = "Error #002";
 		}
 		
-		//Response
-		$response->setJsonContent([
-                "status" => $status,
-                "data"   => $info,
-            ]);		
-		return $response;
+		echo $status;
+		
 	}
 );
 
