@@ -88,10 +88,12 @@ $app->get(
 		$file = fread($userFile,filesize($filename));
 		
 		//Preparing list of OTPs
-		$OTP = $file;
+		$response = new \Phalcon\Http\Response();
+		$response->setContentType('application/json', 'UTF-8');
+		$response->setContent($file);
 		
 		//Sending OTP list
-		return $OTP;
+		return $response;
 	}
 );
 
@@ -108,16 +110,14 @@ $app->post(
 		$status = 'xxx';
 		
 		//Posted data
-		$json = $request->getPost();
-		$json = key($json);
-		$json = str_replace("'", "",$json);
+		$postedData = $app->request->getJsonRawBody();
 		
 		//Posted information array
 		//Unpacking info
 		//1. Username 2. PIN
 		$postInfo = [
-			"user" => substr($json,6,7),
-			"OTP" => substr($json,-5,4),
+			"user" => $postedData->user,
+			"OTP" => $postedData->OTP,
 		];
 		
 		//Reading file
